@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reset password – SubTrack</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Fallback if redirect strips query params (use your project URL and anon key) -->
+  <script>
+    window.SUBTRACK_SUPABASE_URL = 'https://tudsbylnrsalytztuzgv.supabase.co';
+    window.SUBTRACK_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1ZHNieWxucnNhbHl0enR1emd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDkwODksImV4cCI6MjA4ODc4NTA4OX0.OlL31Nm1rHKfRRMbr57017gcyklFArfmoUzgLiWJ8EY';
+  </script>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 360px; margin: 40px auto; padding: 0 20px; }
@@ -39,8 +44,8 @@
     (function() {
       var params = new URLSearchParams(window.location.search);
       var hash = (window.location.hash || '').slice(1);
-      var supabaseUrl = params.get('supabase_url');
-      var anonKey = params.get('anon_key');
+      var supabaseUrl = params.get('supabase_url') || (window.SUBTRACK_SUPABASE_URL || '');
+      var anonKey = params.get('anon_key') || (window.SUBTRACK_ANON_KEY || '');
 
       if (!supabaseUrl || !anonKey) {
         showBadLink();
