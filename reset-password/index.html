@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reset password – SubTrack</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Fallback if redirect strips query params (use your project URL and anon key) -->
   <script>
     window.SUBTRACK_SUPABASE_URL = 'https://tudsbylnrsalytztuzgv.supabase.co';
     window.SUBTRACK_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1ZHNieWxucnNhbHl0enR1emd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDkwODksImV4cCI6MjA4ODc4NTA4OX0.OlL31Nm1rHKfRRMbr57017gcyklFArfmoUzgLiWJ8EY';
@@ -54,29 +53,43 @@
 
       var supabase = window.supabase.createClient(supabaseUrl, anonKey);
 
+      var tokenHash = params.get('token_hash');
+      var typeQuery = params.get('type');
+      if (tokenHash && typeQuery === 'recovery') {
+        supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+          .then(function(_ref) {
+            if (_ref.error) { showBadLink(); return; }
+            showForm();
+            if (window.history.replaceState) window.history.replaceState(null, '', window.location.pathname);
+          })
+          .catch(function() { showBadLink(); });
+        return;
+      }
+
       var hashParams = new URLSearchParams(hash);
       var accessToken = hashParams.get('access_token');
       var refreshToken = hashParams.get('refresh_token');
-      var type = hashParams.get('type');
+      var typeHash = hashParams.get('type');
 
-      if (type === 'recovery' && accessToken && refreshToken) {
+      if (typeHash === 'recovery' && accessToken && refreshToken) {
         supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
           .then(function() {
             showForm();
             if (window.history.replaceState) window.history.replaceState(null, '', window.location.pathname + window.location.search);
           })
           .catch(function() { showBadLink(); });
-      } else {
-        supabase.auth.getSession().then(function(_ref) {
-          var session = _ref.data.session;
-          if (session) {
-            showForm();
-            if (window.history.replaceState) window.history.replaceState(null, '', window.location.pathname + window.location.search);
-          } else {
-            showBadLink();
-          }
-        }).catch(function() { showBadLink(); });
+        return;
       }
+
+      supabase.auth.getSession().then(function(_ref) {
+        var session = _ref.data.session;
+        if (session) {
+          showForm();
+          if (window.history.replaceState) window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        } else {
+          showBadLink();
+        }
+      }).catch(function() { showBadLink(); });
 
       function showForm() {
         document.getElementById('loading').classList.add('hidden');
